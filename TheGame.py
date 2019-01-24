@@ -1,7 +1,6 @@
 __author__ = 'Hagar'
 
-import random, numpy as np, pylab, math, csv
-import networkx as nx
+import random, numpy as np, pylab, math, csv, multiprocessing
 from tkinter import *
 
 
@@ -473,7 +472,7 @@ class BoardVisualization:
         player1Moves = self.play.whoIsNext().GetNumMoves()
         player2Moves = self.play.whoIsNext().GetNumMoves()+1
         disc = Simple_Simulations(discDict,player1Color,player1Moves,player2Moves).simulation(player1Moves,player2Moves,discDict)
-        print("COMPUTER PLAYING,DISC:",disc)
+        print(f"COMPUTER PLAYING,DISC{ disc}")
         # self.w.delete(self.text2)
         # self.w.delete(self.r)
         # self.w.delete(self.text4)
@@ -562,7 +561,7 @@ class Simple_Simulations(object):
         #self.simulation(numSimulations,self.player1Moves,self.player2Moves,self.discDictCopy)
     def simulation(self, player1Moves, player2Moves, discDict):
         numSimulations = 1000
-        print("IN SIMULATION\np1moves:",player1Moves,"\np2moves:",player2Moves,"\ncolor:",self.currentPlayer)
+        print(f"IN SIMULATION\np1moves: {player1Moves} \np2moves: {player2Moves}\ncolor: {self.currentPlayer}")
 
         for simulation in range(numSimulations):
             discDictC = discDict.copy()
