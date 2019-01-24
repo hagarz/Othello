@@ -4,8 +4,6 @@ import random, numpy as np, pylab, math, csv, multiprocessing
 from tkinter import *
 
 
-
-
 """
     Adjacency list loaded from given csv file
 """
@@ -44,6 +42,7 @@ class Board(object):
         self.discsDict = {}
         for i in range (1,65):
             self.discsDict[i] = None
+        # game starts with 2 black and 2 white discs at the centre of the board
         self.discsDict[28], self.discsDict[29], self.discsDict[36], self.discsDict[37] = "W", "B", "B", "W"
 
         # location coordination to discs dictionary
@@ -62,11 +61,12 @@ class Board(object):
 
     def updateDisc(self,disc,color):
         """
-        Updates disc color
+        Updates disc color in dictionary
         """
         self.discsDict[disc] = color
 
     def getDiscsDict(self):
+        """ returns discs color dictionary"""
         return self.discsDict
 
     def numBlackandWhite(self):
@@ -81,7 +81,7 @@ class Board(object):
 
     def getLocToDisc(self,x,y):
         """
-        returns the disc number for location
+        returns the disc number for location on board
         location is an x,y coordination
         example: for the location 8,8 will return 64
         """
@@ -89,7 +89,7 @@ class Board(object):
 
     def getDiscToLoc(self,disc):
         """
-                returns location as an x,y coordinates for disc number
+                returns location on board as an x,y coordinate for disc number
                 disc is an int
                 example: for the disc 64, will return the location 8,8
         """
@@ -102,22 +102,15 @@ class Board(object):
 
 class Player (object):
     """
-    Represents a player .
-
-    At all times the robot has a particular position and direction in the room.
-    The robot also has a fixed speed.
-
-    Subclasses of Robot should provide movement strategies by implementing
-    updatePositionAndClean(), which simulates a single time-step.
+    Represents a player. A player has a color and number of moves
     """
     def __init__(self,playsFirst,color):
         """
-
-        color: a string, the color of player's disc (either "B" for black or "W" for white.
+        color: a string, the color of player's disc (either "B" for black or "W" for white).
         playsFirst: a boolean, indicates if the player is the one who plays first
         """
         self.playsFirst = playsFirst
-        self.numMoves = 0
+        self.numMoves = 0 # number of moves by player
         self.color = color
 
     def GetNumMoves(self):
@@ -128,15 +121,14 @@ class Player (object):
         return self.numMoves
 
     def updateNumMoves(self):
-        """
-        Adds a move to player's number of moves
-        return:
-        """
+        """    Adds a move to player's number of moves   """
         self.numMoves += 1
 
     def getPlayerColor(self):
         return self.color
 
+    def doesPlayFirst(self):
+        return self.playsFirst
 
 
 class GameMoves (object):
@@ -145,6 +137,7 @@ class GameMoves (object):
     """
     def __init__(self, board):
         """
+        Initializes two players and the Board class
 
 
         """
@@ -164,7 +157,6 @@ class GameMoves (object):
         else:
             return self.player2
 
-
     def isValidMove(self,disc):
         """
         Checks if move is valid
@@ -172,6 +164,7 @@ class GameMoves (object):
         """
         self.player = self.whoIsNext()
 
+        # a move is valid only if current location on board is empty
         if self.board.getDiscColor(disc) is not None:
             return False
 
@@ -181,7 +174,8 @@ class GameMoves (object):
         else: cont = "W"
 
         flag = False
-
+        # a move is valid if chosen location on board is next to (at least one) opposite color disc and
+        # is bounded by the disc just placed and another disc of the current player's color
         for neighbor in AdjacencyDict[disc]:
             if self.board.getDiscColor(neighbor) == cont:
                 d = neighbor - disc
@@ -199,7 +193,6 @@ class GameMoves (object):
 
         return flag
 
-
     def isPossibleMove(self):
         """checks if the current player has a possible next move in current situation"""
         self.player = self.whoIsNext()
@@ -214,7 +207,7 @@ class GameMoves (object):
     def isGameOver(self):
         """
         Checks if game over
-        return True or False
+        return: True or False
         """
         for key in range (1,65):
             if self.board.getDiscColor(key) is None:
@@ -222,7 +215,7 @@ class GameMoves (object):
         else: return True
 
     def updateColorDiscs(self,disc):
-        """ colors adjacent discs in accordance with chosen disc and game rules
+        """ colors adjacent discs in accordance with chosen location for disc on board and game rules
          disc is an int representing disc number
          """
         self.player = self.whoIsNext()
@@ -232,9 +225,7 @@ class GameMoves (object):
         else:
             cont = "W"
 
-        #print(self.player.getPlayerColor(), self.player.GetNumMoves())
-
-        nbrList = []
+        nbrList = [] # this is the list of neighbors
         # check which discs need to be colored
         for neighbor in AdjacencyDict[disc]:
             flag = False
@@ -270,7 +261,6 @@ class GameMoves (object):
         # update discs in main dictionary
         for disc in self.updateList:
             self.board.updateDisc(disc,discColor)
-        #print(self.board.getDiscsDict())
         # add move to number of moves for player
         self.player.updateNumMoves()
 
@@ -278,8 +268,9 @@ class GameMoves (object):
 
 
 class BoardVisualization:
+    """creating a GUI of the game using tkinter"""
     def __init__(self):
-        "Initializes a visualization with the specified parameters."
+        """Initializes a visualization with the specified parameters"""
 
         self.board = Board()
         self.play = GameMoves(self.board)
@@ -308,7 +299,7 @@ class BoardVisualization:
             x2, y2 = self._map_coords(8, i)
             self.w.create_line(x1, y1, x2, y2)
 
-        # draw first 4 discs
+        # draw first 4 discs in the center
         xb1,yb1 = 5,4
         xb2,yb2 = 4,5
         xw1,yw1 = 4,4
@@ -322,7 +313,7 @@ class BoardVisualization:
         self.text1 = self.w.create_text(20, 3, font="Verdana 12 bold",anchor=NW, fill="blue",
                                        text=self._status_string())
 
-        # create message texts
+        # create message texts for later
         self.text2 = self.w.create_text(200, 200, fill="red", font="bold", text="Invalid move. Try again")
         self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
         self.w.tag_lower(self.r, self.text2)
@@ -347,7 +338,7 @@ class BoardVisualization:
         self.line1 = self.w.create_line(15, 25, 200, 25, dash=(4, 2), fill="yellow")
         self.w.delete(self.line1)
 
-        # event trigger
+        # event trigger - mouse-click
         self.w.bind("<Button-1>",self.mouse_click)
         self.master.update()
 
@@ -356,7 +347,8 @@ class BoardVisualization:
 
 
     def _status_string(self):
-        "Returns an appropriate status string to print."
+        """Returns an appropriate status string to print:
+        what player is playing now, number of black and white discs and what percent of the board is full"""
         self.num_black = self.board.numBlackandWhite()[0]
         self.num_white = self.board.numBlackandWhite()[1]
         self.percent_full = round(100*((self.num_black + self.num_white)/64))
@@ -384,19 +376,21 @@ class BoardVisualization:
 
         # checking if there is a possible move for player
         if not self.play.isPossibleMove():
-            # popup message
             self.player = self.play.whoIsNext()
 
+            # popup message
             self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="Indigo",
                                             font="Times 20 bold", text="No possible moves ")
             self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
             self.w.tag_lower(self.r4, self.text4)
+
             # update move, so other player is next
             self.player.updateNumMoves()
             self.player = self.play.whoIsNext()
             color = self.player.getPlayerColor()
             if color == "B": color = "BLACK"
             else: color="WHITE"
+
             # update status text
             self.w.delete(self.text1)
             self.w.delete(self.line1)
@@ -407,13 +401,15 @@ class BoardVisualization:
                 138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
             self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
 
+
         # checking if chosen move is valid, if yes updating accordingly
         if self.play.isValidMove(disc):
             self.w.delete(self.text2)
             self.w.delete(self.r)
             self.w.delete(self.text4)
             self.w.delete(self.r4)
-            updateList = self.play.updateColorDiscs(disc)
+            updateList = self.play.updateColorDiscs(disc) # updating main dictionary
+            # updating visualization
             color = self.board.getDiscColor(disc)
             if color == "W": color = "white"
             else: color = "black"
@@ -427,7 +423,7 @@ class BoardVisualization:
 
             print("Hello! in: mouse_click\is valid move")
 
-            # Update text
+            # Update status text
             self.w.delete(self.text1)
             self.text1 = self.w.create_text(
                 20, 3, font="Verdana 12 bold",fill="blue",anchor=NW,text=self._status_string())
@@ -450,6 +446,7 @@ class BoardVisualization:
             self.w.delete(self.r4)
             self.w.delete(self.text2)
             self.w.delete(self.r)
+            # "invalid move" popup message
             self.text2 = self.w.create_text(250, 250, anchor=CENTER,fill="Crimson",
                                             font="Times 18 bold",text="Invalid move. Try again")
             self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
@@ -457,7 +454,9 @@ class BoardVisualization:
 
         self.master.update()
 
-        if self.play.whoIsNext().getPlayerColor() == "B":
+        # activating computer as a player
+        #if self.play.whoIsNext().getPlayerColor() == "B":
+        if not self.play.whoIsNext().doesPlayFirst():
             print('Hello! in: if next is "B"')
             self.text6 = self.w.create_text(250, 250, anchor=NW,font="Times 18 bold", text="Computer is thinking...")
             self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
@@ -472,7 +471,7 @@ class BoardVisualization:
         player1Moves = self.play.whoIsNext().GetNumMoves()
         player2Moves = self.play.whoIsNext().GetNumMoves()+1
         disc = Simple_Simulations(discDict,player1Color,player1Moves,player2Moves).simulation(player1Moves,player2Moves,discDict)
-        print(f"COMPUTER PLAYING,DISC{ disc}")
+        print(f"COMPUTER PLAYING,DISC {disc}")
         # self.w.delete(self.text2)
         # self.w.delete(self.r)
         # self.w.delete(self.text4)

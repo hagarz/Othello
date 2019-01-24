@@ -18,6 +18,7 @@ class Simple_Simulations(object):
         self.count = 0
         self.possibleMovesList = self.possible_moves()
         #self.simulation(numSimulations,self.player1Moves,self.player2Moves,self.discDictCopy)
+
     def simulation(self, player1Moves, player2Moves, discDict):
         numSimulations = 1000
         print(f"IN SIMULATION\np1moves: {player1Moves} \np2moves: {player2Moves}\ncolor: {self.currentPlayer}")
@@ -41,7 +42,6 @@ class Simple_Simulations(object):
                 winner = move
         print ("winner:",winner,maxMove)
         return winner
-
 
     def reset_vars(self,player1Moves,player2Moves,discDict):
         self.player1Moves = player1Moves
