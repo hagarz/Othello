@@ -5,7 +5,7 @@ import random, math, multiprocessing as mp, time
 
 
 class Simple_Simulations(object):
-    def __init__(self,discDict,player1Color,player1Moves,player2Moves):
+    def __init__(self,discDict,player1Color,player1Moves,player2Moves,AdjacencyDict):
         self.discDictCopy = discDict.copy()
         self.winnersDict={}
         self.player1c = player1Color
@@ -14,10 +14,9 @@ class Simple_Simulations(object):
         self.currentPlayer = player1Color
         self.player1Moves = player1Moves
         self.player2Moves = player2Moves
-        self.AdjacencyDict = load_Adj()
+        self.AdjacencyDict = AdjacencyDict
         self.count = 0
         self.possibleMovesList = self.possible_moves()
-        #self.simulation(numSimulations,self.player1Moves,self.player2Moves,self.discDictCopy)
 
     def simulation(self, player1Moves, player2Moves, discDict):
         numSimulations = 1000
