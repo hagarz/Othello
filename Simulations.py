@@ -1,12 +1,11 @@
 __author__ = 'Hagar'
 import random, multiprocessing as mp, time, os
 
-print("name =",__name__)
 
 class Simulations(object):
     """Computer chooses its next step by performing multiple simulations of the game"""
     def __init__(self,arguments):
-        # encapsulating arguments tuple:
+        # encapsulating arguments inserted to args_list as tuple:
         discDict, player1Color, player1Moves, player2Moves, adjacencyDict = arguments
 
         self.discDictCopy = discDict.copy()
@@ -26,9 +25,7 @@ class Simulations(object):
         then a simulation of the game is continued from the point the real game has stopped
         and is played starting with randomly chosen move.
          Returns the chosen move if simulated game was won"""
-        process_id = os.getpid()
-        print(f"Process ID: {process_id}")
-        print("possibleMovesList:",self.possibleMovesList)
+
         # randomly choosing a move (disc) from a list of possible moves:
         firstMove = random.choice(self.possibleMovesList)
         self.update_dict(firstMove,self.player1c)        # updating chosen move in dictionary
@@ -37,55 +34,8 @@ class Simulations(object):
         self.game_on(firstMove)    # simulating a game continuing from chosen move
         return self.winnersDict
 
-    # def using_multiprocessing(self,player1Moves, player2Moves, discDict):
-    #     # using multiprocessing to run simulations in parallel
-    #     if __name__ == '__main__':
-    #         start_time = time.time()
-    #         print("I'm in MP!")
-    #         self.arguments_list = []
-    #         self.arguments_tuple = (player1Moves,player2Moves,discDict)
-    #         for i in range(20):
-    #             self.arguments_list.append(self.arguments_tuple)
-    #         pool = mp.Pool(4)
-    #         #with mp.Pool(5) as pool:
-    #         self.result = pool.map(self.simulation,self.arguments_list)
-    #         #print (pool.map(self.simulation,self.arguments_list))
-    #         print("result =",self.result)
-    #
-    #         #process = mp.Process(target=self.simulation, args=(player1Moves,player2Moves,discDict,numSimulations))
-    #             #processes.append(process)
-    #             # processes are spawned by creating a Process object and then calling its start() method
-    #         #process.start()
-    #
-    #         pool.close()
-    #         pool.join()
-    #
-    #         #for process in processes:
-    #         #process.join() # wait for all processes we started to be complete before we run any subsequent code
-    #         end_time = time.time() - start_time
-    #         print(f"time: {end_time}")
-    #
-    #         self.resultsDict={}
-    #         for dict in self.result:
-    #             for i in dict:
-    #                 self.resultsDict[i] = self.resultsDict.get(i,0) + 1
-    #
-    #         maxMove = 0
-    #         winner = 0
-    #         for move in self.resultsDict:
-    #             if self.resultsDict[move] > maxMove:
-    #                 maxMove = self.resultsDict[move]
-    #                 winner = move
-    #         print ("winner:",winner,maxMove)
-    #         #return winner
-
-    # def reset_vars(self,player1Moves,player2Moves,discDict):
-    #     self.player1Moves = player1Moves
-    #     self.player2Moves = player2Moves
-    #     self.discDictCopy = discDict
-    #     self.count = 0
-
     def possible_moves(self):
+        """ iterates over msin dictionary to create a list of poss"""
         psbleMovesList=[]
         for i in self.discDictCopy:
             if self.discDictCopy[i] is None:
@@ -100,12 +50,10 @@ class Simulations(object):
                 raise NoPossibleMovesException
             else:
                 counter = 0
-                print("no moves?",self.discDictCopy)
                 for k in self.discDictCopy:
                     if self.discDictCopy[k] is None:
                         counter += 1
                         self.discDictCopy[k] = "N"
-                print ("counter=",counter)
                 raise NoPossibleMovesException
 
     def valid_moves(self,disc):
@@ -214,7 +162,6 @@ class Simulations(object):
         for disc in updateList:
             self.update_dict(disc,discColor)
 
-
     def game_on(self, firstMove):
         """ simulating a game by choosing a move randomly from a list of possible moves.
         """
@@ -226,7 +173,7 @@ class Simulations(object):
                 self.update_dict(move, player) # update move in discs' dictionary
                 self.updateDiscsColor(move)   # color neighbor discs as result of chosen move
                 self.update_num_moves(player) # add move to number of moves for player
-            except NoPossibleMovesException:   # if there is no possible move, an exception is raised anf the turn goes to the next player
+            except NoPossibleMovesException:   # if there is no possible move, an exception is raised and the turn goes to the next player
                 self.update_num_moves(player)
 
         count1=0
@@ -237,7 +184,6 @@ class Simulations(object):
             else:
                 count2 += 1
         if count1 > count2:
-            print(os.getpid(),self.winnersDict)
             self.winnersDict[firstMove] = self.winnersDict.get(firstMove,0) + 1
 
 
@@ -255,56 +201,9 @@ class SimulationManager(object):
         return result
 
     def __getstate__(self):
-        # returned object is pickled as the contents for the instance, instead of the contents of the instance’s dictionary
-        # self_dict = self.__dict__.copy()
-        # del self_dict['pool']
-        # return self_dict
+        """ returned object is pickled as the contents for the instance,
+         instead of the contents of the instance’s dictionary"""
         pass
-
-
-# def using_multiprocessing(discDict, player1Color, player1Moves, player2Moves, adjacencyDict):
-#     # using multiprocessing to run simulations in parallel
-#
-#     start_time = time.time()
-#     print("I'm in MP!")
-#
-#     arguments_init = (discDict, player1Color, player1Moves, player2Moves, adjacencyDict)
-#     arguments_list = []
-#     #arguments_tuple = (player1Moves, player2Moves, discDict)
-#     for i in range(5):
-#         arguments_list.append(arguments_init)
-#     pool = mp.Pool(4)
-#     # with mp.Pool(5) as pool:
-#     result = pool.map(Simulations.simulation, arguments_list)
-#     # print (pool.map(self.simulation,self.arguments_list))
-#     print("result =", result)
-#
-#     # process = mp.Process(target=self.simulation, args=(player1Moves,player2Moves,discDict,numSimulations))
-#     # processes.append(process)
-#     # processes are spawned by creating a Process object and then calling its start() method
-#     # process.start()
-#
-#     pool.close()
-#     pool.join()
-#
-#     # for process in processes:
-#     # process.join() # wait for all processes we started to be complete before we run any subsequent code
-#     end_time = time.time() - start_time
-#     print(f"time: {end_time}")
-#
-#     resultsDict = {}
-#     for dict in result:
-#         for i in dict:
-#             resultsDict[i] = resultsDict.get(i, 0) + 1
-#
-#     maxMove = 0
-#     winner = 0
-#     for move in resultsDict:
-#         if resultsDict[move] > maxMove:
-#             maxMove = resultsDict[move]
-#             winner = move
-#     print("winner:", winner, maxMove)
-#     # return winner
 
 
 
@@ -318,6 +217,8 @@ class Weighted_Simulations(Simulations):
 
 
 if __name__ == '__main__':
+    """this part is only relevant when running simulations from this file and not as part of the game """
+
     start_time = time.time()
     manager = SimulationManager()
     disc_dict = {1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None, 10: None, 11: None, 12: None, 13: None, 14: None, 15: None, 16: None, 17: None, 18: None, 19: None, 20: None, 21: None, 22: None, 23: None, 24: None, 25: None, 26: None, 27: None, 28: 'W', 29: 'B', 30: None, 31: None, 32: None, 33: None, 34: None, 35: 'W', 36: 'W', 37: 'W', 38: None, 39: None, 40: None, 41: None, 42: None, 43: None, 44: None, 45: None, 46: None, 47: None, 48: None, 49: None, 50: None, 51: None, 52: None, 53: None, 54: None, 55: None, 56: None, 57: None, 58: None, 59: None, 60: None, 61: None, 62: None, 63: None, 64: None}
@@ -328,7 +229,7 @@ if __name__ == '__main__':
 
     args = (disc_dict,player1_color,player1_moves,player2_moves,adjacency_dict)
     args_list = []
-    for i in range(10000):
+    for i in range(50):
         args_list.append(args)
 
     result = manager.run(args_list)

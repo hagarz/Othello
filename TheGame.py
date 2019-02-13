@@ -1,6 +1,6 @@
 __author__ = 'Hagar'
 
-import random, numpy as np, pylab, math, csv, multiprocessing
+import random, numpy as np, pylab, math, csv, multiprocessing, Simulations
 from tkinter import *
 
 
@@ -27,18 +27,18 @@ def load_Adj():
     return AdjacencyDict
 
 
-
 class Board(object):
     """
     Board represents the color of discs on the board
 
     A board has 8* 8 tiles with 64 discs.
+    The board is represented by a dictionary,
     each of the discs is either black ("B"), white ("W") or empty (None).
     """
 
     def __init__(self):
 
-       # initializing discs color dictionary
+        # initializing discs color dictionary
         self.discsDict = {}
         for i in range (1,65):
             self.discsDict[i] = None
@@ -83,15 +83,15 @@ class Board(object):
         """
         returns the disc number for location on board
         location is an x,y coordination
-        example: for the location 8,8 will return 64
+        Example: for the location 8,8 will return 64
         """
         return self.locToDiscDict[x,y]
 
     def getDiscToLoc(self,disc):
         """
-                returns location on board as an x,y coordinate for disc number
-                disc is an int
-                example: for the disc 64, will return the location 8,8
+        returns location on board as an x,y coordinate for disc number
+        disc is an int
+        Example: for the disc 64, will return the location 8,8
         """
         self.discToLocDict = {} # discs to location coordination dictionary
         for i in self.locToDiscDict:
@@ -128,17 +128,18 @@ class Player (object):
         return self.color
 
     def doesPlayFirst(self):
+        """ check if current player was the firs player. Return boolean"""
         return self.playsFirst
 
 
 class GameMoves (object):
     """
-    NEED TO FILL
+    This class contains main methods to
+
     """
     def __init__(self, board):
         """
         Initializes two players and the Board class
-
 
         """
         self.player1 = Player(True,"W")
@@ -150,7 +151,7 @@ class GameMoves (object):
     def whoIsNext(self):
         """
         Checks who's turn it is to play
-        return: player
+        return: player object
         """
         if self.player1.GetNumMoves() == self.player2.GetNumMoves():
             return self.player1
@@ -268,7 +269,10 @@ class GameMoves (object):
 
 
 class BoardVisualization:
-    """creating a GUI of the game using tkinter"""
+    """
+    creating a GUI of the game using tkinter
+    This is also the main loop of the game
+    """
     def __init__(self):
         """Initializes a visualization with the specified parameters"""
 
@@ -310,8 +314,10 @@ class BoardVisualization:
         self.w.create_oval([xb2*55-20, yb2*55-20, xb2*55+20, yb2*55+20], fill="black")
 
         # Draw some status text
-        self.text1 = self.w.create_text(20, 3, font="Verdana 12 bold",anchor=NW, fill="blue",
-                                       text=self._status_string())
+        self.status_text = self.w.create_text(25, 3, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                              text=self._status_string())
+        self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                        text=self._status_string2())
 
         # create message texts for later
         self.text2 = self.w.create_text(200, 200, fill="red", font="bold", text="Invalid move. Try again")
@@ -349,18 +355,24 @@ class BoardVisualization:
     def _status_string(self):
         """Returns an appropriate status string to print:
         what player is playing now, number of black and white discs and what percent of the board is full"""
+        #self.num_black = self.board.numBlackandWhite()[0]
+        #self.num_white = self.board.numBlackandWhite()[1]
+        #self.percent_full = round(100*((self.num_black + self.num_white)/64))
+        if self.play.whoIsNext().getPlayerColor() == "W": self.playing="WHITE"
+        else: self.playing = "BLACK"
+        return f"Now playing: {str(self.playing)}"
+               #(self.num_white, self.num_black, self.percent_full)
+    def _status_string2(self):
+        """Returns an appropriate status string to print:
+        what player is playing now, number of black and white discs and what percent of the board is full"""
         self.num_black = self.board.numBlackandWhite()[0]
         self.num_white = self.board.numBlackandWhite()[1]
         self.percent_full = round(100*((self.num_black + self.num_white)/64))
-        if self.play.whoIsNext().getPlayerColor() == "W": self.playing="WHITE"
-        else: self.playing = "BLACK"
-        return "Now playing: "+str(self.playing)+";  white: %d; black: %d;  %d%% filled" % \
-               (self.num_white, self.num_black, self.percent_full)
-
+        return f"White: {self.num_white},  Black: {self.num_black};  {self.percent_full}% filled"
+               #(self.num_white, self.num_black, self.percent_full)
 
     def mouse_click(self,location):
         """triggered by mouse click on board game"""
-        #self.location = location
 
         # converting from pixel-location to x,y coordinate location
         x, y = location.x , location.y
@@ -370,7 +382,6 @@ class BoardVisualization:
         if xa > 8: xa = 8
         if ya < 1: ya = 1
         if ya > 8: ya = 8
-
 
         disc = self.board.getLocToDisc(xa,ya)
 
@@ -392,15 +403,14 @@ class BoardVisualization:
             else: color="WHITE"
 
             # update status text
-            self.w.delete(self.text1)
+            self.w.delete(self.status_text)
             self.w.delete(self.line1)
             self.w.delete(self.text5)
-            self.text1 = self.w.create_text(
+            self.status_text = self.w.create_text(
                 20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
             self.text5 = self.w.create_text(
                 138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
             self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-
 
         # checking if chosen move is valid, if yes updating accordingly
         if self.play.isValidMove(disc):
@@ -421,11 +431,10 @@ class BoardVisualization:
                 x1, y1 = xa * 55, ya * 55
                 self.w.create_oval([x1 - 20, y1 - 20, x1 + 20, y1 + 20], fill=color)
 
-            print("Hello! in: mouse_click\is valid move")
 
             # Update status text
-            self.w.delete(self.text1)
-            self.text1 = self.w.create_text(
+            self.w.delete(self.status_text)
+            self.status_text = self.w.create_text(
                 20, 3, font="Verdana 12 bold",fill="blue",anchor=NW,text=self._status_string())
 
             # checking if game over
@@ -478,13 +487,55 @@ class BoardVisualization:
             self.master.update()
             self.computerPlaying()
 
+            # checking if game over before continuing with the game
+            if self.play.isGameOver():
+                black, white = self.board.numBlackandWhite()
+                if black > white:
+                    winner = "black"
+                elif black == white:
+                    winner = "no one"
+                else:
+                    winner = "white"
+                self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="lime",
+                                                font="Times 30 bold",
+                                                text="GAME OVER\n" + "    " + str(winner) + " wins!")
+                self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
+                self.w.tag_lower(self.r3, self.text3)
+
     def computerPlaying(self):
         print ("Hello! in: computerPlaying")
-        discDict = self.board.getDiscsDict()
+        # arguments for the simulations:
+        discDictCopy = self.board.getDiscsDict().copy()
         player1Color = self.play.whoIsNext().getPlayerColor()
         player1Moves = self.play.whoIsNext().GetNumMoves()
         player2Moves = self.play.whoIsNext().GetNumMoves()+1
-        disc = Simple_Simulations(discDict,player1Color,player1Moves,player2Moves).simulation(player1Moves,player2Moves,discDict)
+
+        manager = Simulations.SimulationManager() # initializing the sumulation manager
+        args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
+        args_list = []
+        for i in range(5000):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+            args_list.append(args)
+
+        result = manager.run(args_list)
+        print("result =", result)
+
+        resultsDict = {}
+        for dict in result:
+            for i in dict:
+                resultsDict[i] = resultsDict.get(i, 0) + 1
+
+        maxMove = 0
+        winner = 0
+        for move in resultsDict:
+            if resultsDict[move] > maxMove:
+                maxMove = resultsDict[move]
+                winner = move
+        print("winner:", winner, maxMove)
+
+        disc = winner
+
+
+        #disc = Simple_Simulations(discDict,player1Color,player1Moves,player2Moves).simulation(player1Moves,player2Moves,discDict)
         print(f"COMPUTER PLAYING,DISC {disc}")
         # self.w.delete(self.text2)
         # self.w.delete(self.r)
@@ -507,8 +558,8 @@ class BoardVisualization:
             self.w.create_oval([x1 - 20, y1 - 20, x1 + 20, y1 + 20], fill=color)
 
         # Update text
-        self.w.delete(self.text1)
-        self.text1 = self.w.create_text(
+        self.w.delete(self.status_text)
+        self.status_text = self.w.create_text(
             20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
 
 
@@ -518,6 +569,7 @@ class BoardVisualization:
 
     def _map_coords(self,x,y):
         return (250+450*(x-4)/8,250+450*(4-y)/8)
+
 
 class Coputer(object):
     """TO Be updated"""
@@ -538,208 +590,11 @@ class LevelEasy(Coputer):
         optionalList = []
         discDict = self.board.getDiscsDict()
         for i in discDict:
-            if discDict[i] == None:
+            if discDict[i] is None:
                 if self.play.isValidMove(i):
                     optionalList.append(i)
         # choose a random move from available possible moves
-        self.move = random.choice(optionalList)
-
-
-# class Simple_Simulations(object):
-#     def __init__(self,discDict,player1Color,player1Moves,player2Moves):
-#         self.discDictCopy = discDict.copy()
-#         print(f"Adj {AdjacencyDict}")
-#         self.winnersDict={}
-#         self.player1c = player1Color
-#         if self.player1c == "B": self.player2c = "W"
-#         else: self.player2c = "B"
-#         self.currentPlayer = player1Color
-#         self.player1Moves = player1Moves
-#         self.player2Moves = player2Moves
-#         self.AdjacencyDict = load_Adj()
-#         self.count = 0
-#         self.possibleMovesList = self.possible_moves()
-#         #self.simulation(numSimulations,self.player1Moves,self.player2Moves,self.discDictCopy)
-#     def simulation(self, player1Moves, player2Moves, discDict):
-#         numSimulations = 1000
-#         print(f"IN SIMULATION\np1moves: {player1Moves} \np2moves: {player2Moves}\ncolor: {self.currentPlayer}")
-#
-#         for simulation in range(numSimulations):
-#             discDictC = discDict.copy()
-#             self.reset_vars(player1Moves, player2Moves, discDictC)       #reseting so each simulations starts from the same place
-#             firstMove = random.choice(self.possibleMovesList)
-#             self.update_dict(firstMove,self.player1c)
-#             self.updateDiscsColor(firstMove)
-#             self.update_num_moves(self.player1c)
-#             self.game_on(firstMove)
-#
-#         print("winnerDict:",self.winnersDict)
-#         maxMove = 0
-#         winner = 0
-#         for move in self.winnersDict:
-#             if self.winnersDict[move] > maxMove:
-#                 maxMove = self.winnersDict[move]
-#                 winner = move
-#         print ("winner:",winner,maxMove)
-#         return winner
-#
-#
-#     def reset_vars(self,player1Moves,player2Moves,discDict):
-#         self.player1Moves = player1Moves
-#         self.player2Moves = player2Moves
-#         self.discDictCopy = discDict
-#         self.count = 0
-#
-#     def possible_moves(self):
-#         psbleMovesList=[]
-#         for i in self.discDictCopy:
-#             if self.discDictCopy[i] is None:
-#                 if self.valid_moves(i):
-#                     psbleMovesList.append(i)
-#         if len(psbleMovesList) > 0:
-#             self.count = 0
-#             return psbleMovesList
-#         else:
-#             if self.count < 2:
-#                 self.count += 1
-#                 raise NoPossibleMovesException
-#             else:
-#                 counter = 0
-#                 print("no moves?",self.discDictCopy)
-#                 for k in self.discDictCopy:
-#                     if self.discDictCopy[k] is None:
-#                         counter += 1
-#                         self.discDictCopy[k] = "N"
-#                 print ("counter=",counter)
-#                 raise NoPossibleMovesException
-#
-#     def valid_moves(self,disc):
-#         discColor = self.now_playing()
-#         if discColor == "W":
-#             cont = "B"
-#         else:
-#             cont = "W"
-#
-#         flag = False
-#
-#         for neighbor in self.AdjacencyDict[disc]:
-#             if self.get_disc_color(neighbor) == cont:
-#                 d = neighbor - disc
-#                 tempA = neighbor
-#                 tempB = tempA + d
-#                 while not flag:
-#                     if tempB in self.AdjacencyDict[tempA]:
-#                         if self.get_disc_color(tempB) == discColor:
-#                             return True
-#                         elif self.get_disc_color(tempB) == cont:
-#                             tempA = tempB
-#                             tempB = tempA + d
-#                         else:
-#                             break
-#                     else:
-#                         break
-#         return flag
-#
-#     def now_playing(self):
-#         if self.get_num_moves(self.player2c) > self.get_num_moves(self.player1c):
-#             return self.player1c
-#         elif self.get_num_moves(self.player1c) == self.get_num_moves(self.player2c):
-#             return self.player2c
-#
-#     def get_num_moves(self,player):
-#         if player == self.player1c:
-#             return self.player1Moves
-#         elif player == self.player2c:
-#             return self.player2Moves
-#
-#     def update_num_moves(self, player):
-#         if player == self.player1c:
-#             self.player1Moves +=1
-#         elif player == self.player2c:
-#             self.player2Moves += 1
-#
-#     def get_disc_color(self,disc):
-#         return self.discDictCopy[disc]
-#
-#     def update_dict(self,disc,color):
-#         self.discDictCopy[disc] = color
-#
-#     def fin_check(self):
-#         for i in self.discDictCopy:
-#             if self.discDictCopy[i] is None:
-#                 return False
-#         return True
-#
-#
-#     def updateDiscsColor(self,disc):
-#         """ colors adjacent discs in accordance with chosen disc and game rules
-#          disc is an int representing disc number
-#          """
-#         discColor = self.now_playing()
-#         if discColor == "W":
-#             cont = "B"
-#         else:
-#             cont = "W"
-#
-#         nbrList = []
-#         # check which discs need to be colored
-#         for neighbor in AdjacencyDict[disc]:
-#             flag = False
-#             counter = 0
-#             if self.get_disc_color(neighbor) == cont:
-#                 d = neighbor - disc # this is the direction
-#                 tempA = neighbor
-#                 tempB = tempA + d
-#                 while not flag:
-#                     counter += 1
-#                     if tempB in self.AdjacencyDict[tempA]:
-#                         if self.get_disc_color(tempB) == discColor:
-#                             flag = True
-#                             nbrList.append([neighbor, counter])
-#                         elif self.get_disc_color(tempB) == cont:
-#                             tempA = tempB
-#                             tempB = tempA + d
-#                         else: break
-#                     else: break
-#
-#                 if flag:
-#                     nbrList.append([neighbor, counter])
-#
-#         # create a list of the discs which need to be colored
-#         updateList=[]
-#         updateList.append(disc)
-#         for nbr in nbrList:
-#             d = nbr[0] - disc
-#             for count in range(nbr[1]):
-#                 x = nbr[0] + d*count
-#                 updateList.append(x)
-#
-#         # update discs in main dictionary
-#         for disc in updateList:
-#             self.update_dict(disc,discColor)
-#
-#
-#     def game_on(self, firstMove):
-#         while not self.fin_check():
-#             player = self.now_playing()
-#
-#             try:
-#                 move = random.choice(self.possible_moves())
-#                 self.update_dict(move, player) # update move in discs' dictionary
-#                 self.updateDiscsColor(move)   # color neighbor discs as result of chosen move
-#                 self.update_num_moves(player) # add move to number of moves for player
-#             except NoPossibleMovesException:
-#                 self.update_num_moves(player)
-#
-#         count1=0
-#         count2=0
-#         for disc in self.discDictCopy:
-#             if self.discDictCopy[disc] == self.player1c:
-#                 count1 += 1
-#             else:
-#                 count2 += 1
-#         if count1 > count2:
-#             self.winnersDict[firstMove] = self.winnersDict.get(firstMove,0) + 1
+        move = random.choice(optionalList)
 
 
 class NoPossibleMovesException(Exception):
