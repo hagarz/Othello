@@ -35,7 +35,7 @@ class Simulations(object):
         return self.winnersDict
 
     def possible_moves(self):
-        """ iterates over msin dictionary to create a list of poss"""
+        """ iterates over main dictionary to create a list of possible moves"""
         psbleMovesList=[]
         for i in self.discDictCopy:
             if self.discDictCopy[i] is None:
@@ -57,6 +57,7 @@ class Simulations(object):
                 raise NoPossibleMovesException
 
     def valid_moves(self,disc):
+        """Checks if move is valid, returns boolean"""
         discColor = self.now_playing()
         if discColor == "W":
             cont = "B"
@@ -84,6 +85,7 @@ class Simulations(object):
         return flag
 
     def now_playing(self):
+        """what player is playing now"""
         if self.get_num_moves(self.player2c) > self.get_num_moves(self.player1c):
             return self.player1c
         elif self.get_num_moves(self.player1c) == self.get_num_moves(self.player2c):
@@ -212,9 +214,6 @@ class NoPossibleMovesException(Exception):
     class to indicate that there are no possible moves for player in current situation"""
 
 
-class Weighted_Simulations(Simulations):
-    pass
-
 
 if __name__ == '__main__':
     """this part is only relevant when running simulations from this file and not as part of the game """
@@ -229,14 +228,10 @@ if __name__ == '__main__':
 
     args = (disc_dict,player1_color,player1_moves,player2_moves,adjacency_dict)
     args_list = []
-    for i in range(50):
+    for i in range(100):
         args_list.append(args)
 
     result = manager.run(args_list)
-    # discDict,player1Color,player1Moves,player2Moves,AdjacencyDict
-    # args = (disc_dict,player1_color,player1_moves,player2_moves,adjacency_dict)
-    # simulation_init = Simple_Simulations(args)
-    #mp_simulation1 = using_multiprocessing(disc_dict,player1_color,player1_moves,player2_moves,adjacency_dict)
 
     print("result =", result)
     end_time = time.time() - start_time

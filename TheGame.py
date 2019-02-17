@@ -1,6 +1,6 @@
 __author__ = 'Hagar'
 
-import random, numpy as np, pylab, math, csv, multiprocessing, Simulations
+import random, math, csv, multiprocessing, Simulations
 from tkinter import *
 
 
@@ -22,7 +22,6 @@ def load_Adj():
             for j in row[1:]:
                 tempList.append(int(j))
             AdjacencyDict[index] = tempList
-            #AdjacencyDict[index] = row[1:]
     file.close()
     return AdjacencyDict
 
@@ -323,7 +322,7 @@ class BoardVisualization:
         self.text2 = self.w.create_text(200, 200, fill="red", font="bold", text="Invalid move. Try again")
         self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
         self.w.tag_lower(self.r, self.text2)
-        self.text3 = self.w.create_text(250, 250, anchor=CENTER, fill="Crimson",
+        self.text3 = self.w.create_text(250, 250, anchor=CENTER, fill="purple",
                                         font="Times 250 bold", text="GAME OVER")
         self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
         self.text4 = self.w.create_text(250, 250, anchor=CENTER, text="No possible moves ")
@@ -362,6 +361,7 @@ class BoardVisualization:
         else: self.playing = "BLACK"
         return f"Now playing: {str(self.playing)}"
                #(self.num_white, self.num_black, self.percent_full)
+
     def _status_string2(self):
         """Returns an appropriate status string to print:
         what player is playing now, number of black and white discs and what percent of the board is full"""
@@ -370,6 +370,10 @@ class BoardVisualization:
         self.percent_full = round(100*((self.num_black + self.num_white)/64))
         return f"White: {self.num_white},  Black: {self.num_black};  {self.percent_full}% filled"
                #(self.num_white, self.num_black, self.percent_full)
+
+    def _map_coords(self,x,y):
+        """ Maps grid positions to window positions (in pixels)"""
+        return (250+450*(x-4)/8,250+450*(4-y)/8)
 
     def mouse_click(self,location):
         """triggered by mouse click on board game"""
@@ -390,7 +394,7 @@ class BoardVisualization:
             self.player = self.play.whoIsNext()
 
             # popup message
-            self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="Indigo",
+            self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
                                             font="Times 20 bold", text="No possible moves ")
             self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
             self.w.tag_lower(self.r4, self.text4)
@@ -404,10 +408,13 @@ class BoardVisualization:
 
             # update status text
             self.w.delete(self.status_text)
+            self.w.delete(self.status_text2)
             self.w.delete(self.line1)
             self.w.delete(self.text5)
             self.status_text = self.w.create_text(
                 20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
+            self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                                   text=self._status_string2())
             self.text5 = self.w.create_text(
                 138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
             self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
@@ -434,8 +441,11 @@ class BoardVisualization:
 
             # Update status text
             self.w.delete(self.status_text)
+            self.w.delete(self.status_text2)
             self.status_text = self.w.create_text(
                 20, 3, font="Verdana 12 bold",fill="blue",anchor=NW,text=self._status_string())
+            self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                                   text=self._status_string2())
 
             # checking if game over
             if self.play.isGameOver():
@@ -449,21 +459,19 @@ class BoardVisualization:
                 self.w.tag_lower(self.r3, self.text3)
 
         else:
-            print("else:invalid move")
-
             self.w.delete(self.text4)
             self.w.delete(self.r4)
             self.w.delete(self.text2)
             self.w.delete(self.r)
             # "invalid move" popup message
-            self.text2 = self.w.create_text(250, 250, anchor=CENTER,fill="Crimson",
+            self.text2 = self.w.create_text(250, 250, anchor=CENTER,fill="red",
                                             font="Times 18 bold",text="Invalid move. Try again")
             self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
             self.w.tag_lower(self.r, self.text2)
 
         self.master.update()
 
-        # checking if game over
+        # checking if game over:
         if self.play.isGameOver():
             black, white = self.board.numBlackandWhite()
             if black > white:
@@ -478,9 +486,7 @@ class BoardVisualization:
             self.w.tag_lower(self.r3, self.text3)
 
         # activating computer as a player
-        #if self.play.whoIsNext().getPlayerColor() == "B":
         if not self.play.whoIsNext().doesPlayFirst():
-            print('Hello! in: if next is "B"')
             self.text6 = self.w.create_text(250, 250, anchor=NW,font="Times 18 bold", text="Computer is thinking...")
             self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
             self.w.tag_lower(self.r6, self.text6)
@@ -503,7 +509,8 @@ class BoardVisualization:
                 self.w.tag_lower(self.r3, self.text3)
 
     def computerPlaying(self):
-        print ("Hello! in: computerPlaying")
+        """activates the comuter as a player by using simulation (file: Simulations)
+        returns: disc number"""
         # arguments for the simulations:
         discDictCopy = self.board.getDiscsDict().copy()
         player1Color = self.play.whoIsNext().getPlayerColor()
@@ -513,11 +520,10 @@ class BoardVisualization:
         manager = Simulations.SimulationManager() # initializing the sumulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(5000):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(10):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)
-        print("result =", result)
 
         resultsDict = {}
         for dict in result:
@@ -530,19 +536,9 @@ class BoardVisualization:
             if resultsDict[move] > maxMove:
                 maxMove = resultsDict[move]
                 winner = move
-        print("winner:", winner, maxMove)
-
         disc = winner
 
-
-        #disc = Simple_Simulations(discDict,player1Color,player1Moves,player2Moves).simulation(player1Moves,player2Moves,discDict)
-        print(f"COMPUTER PLAYING,DISC {disc}")
-        # self.w.delete(self.text2)
-        # self.w.delete(self.r)
-        # self.w.delete(self.text4)
-        # self.w.delete(self.r4)
         updateList = self.play.updateColorDiscs(disc)
-        print("COMPUTER PLAYING,after updateList:",self.board.getDiscsDict())
         color = self.board.getDiscColor(disc)
         if color == "W":
             color = "white"
@@ -551,6 +547,7 @@ class BoardVisualization:
         xa,ya = self.board.getDiscToLoc(disc)
         x1, y1 = xa * 55, ya * 55
         self.w.create_oval([x1 - 20, y1 - 20, x1 + 20, y1 + 20], fill=color)
+
         # draw discs:
         for k in updateList:
             xa, ya = self.board.getDiscToLoc(k)
@@ -559,42 +556,14 @@ class BoardVisualization:
 
         # Update text
         self.w.delete(self.status_text)
+        self.w.delete(self.status_text2)
         self.status_text = self.w.create_text(
             20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
-
-
+        self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                               text=self._status_string2())
         self.w.delete(self.text6)
         self.w.delete(self.r6)
 
-
-    def _map_coords(self,x,y):
-        return (250+450*(x-4)/8,250+450*(4-y)/8)
-
-
-class Coputer(object):
-    """TO Be updated"""
-    def __init__(self,player,board,gameMoves):
-        self.player = player
-        self.color = self.player.getPlayerColor()
-        self.board = board
-        self.play = gameMoves
-
-
-class LevelEasy(Coputer):
-    """chooses the next step randomly from available valid moves.
-    returns a number of disc"""
-    def __init__(self):
-        pass
-
-    def game(self):
-        optionalList = []
-        discDict = self.board.getDiscsDict()
-        for i in discDict:
-            if discDict[i] is None:
-                if self.play.isValidMove(i):
-                    optionalList.append(i)
-        # choose a random move from available possible moves
-        move = random.choice(optionalList)
 
 
 class NoPossibleMovesException(Exception):
