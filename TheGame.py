@@ -8,12 +8,11 @@ from tkinter import *
     Adjacency list loaded from given csv file
 """
 def load_Adj():
+    """ a dictionary representing adjacencies for each disc """
     AdjacencyDict = {}
     index = 0
 
     with open("AdjList.csv", 'r') as file:
-        # a = [{k: int(v) for k, v in row.items()}
-        #      for row in csv.DictReader(f, skipinitialspace=True)]
         for row in file:
             row = [x.strip() for x in row.split(',')]
             row = list(filter(None,row))
@@ -131,20 +130,20 @@ class Player (object):
         return self.playsFirst
 
 
-class GameMoves (object):
+class GameController (object):
     """
-    This class contains main methods to
-
+    GameController represents the enforcement of the game rules and logic.
     """
     def __init__(self, board):
         """
         Initializes two players and the Board class
 
         """
+        # create two player objects:
         self.player1 = Player(True,"W")
         self.player2 = Player(False,"B")
         self.board = board
-        self.player = self.player1
+        self.player = self.player1 # this is the current player playing
 
 
     def whoIsNext(self):
@@ -159,7 +158,8 @@ class GameMoves (object):
 
     def isValidMove(self,disc):
         """
-        Checks if move is valid
+        Checks if move is valid. disc is the move to be checked if valid
+        disc is an int representing disc number
         return: True if valid, False if not
         """
         self.player = self.whoIsNext()
@@ -174,22 +174,26 @@ class GameMoves (object):
         else: cont = "W"
 
         flag = False
-        # a move is valid if chosen location on board is next to (at least one) opposite color disc and
-        # is bounded by the disc just placed and another disc of the current player's color
-        for neighbor in AdjacencyDict[disc]:
-            if self.board.getDiscColor(neighbor) == cont:
-                d = neighbor - disc
-                tempA = neighbor
-                tempB = tempA + d
+        # a move is valid if:
+        #  chosen location on board is next to (at least one) opposite color disc
+        # and is bounded by the disc just placed and another disc of the current player's color
+        for neighbor in AdjacencyDict[disc]: # looping over all adjacent discs
+            if self.board.getDiscColor(neighbor) == cont:  # check if adjacent disc is in opponent's color
+                direction = neighbor - disc
+                nextDisc = neighbor
+                next2nextDisc = nextDisc + direction
                 while not flag:
-                    if tempB in AdjacencyDict[tempA]:
-                        if self.board.getDiscColor(tempB) == discColor  :
+                    # check if next disc is adjacent (for example, disc 8 is not adjacent to 9. 9 is in a different row)
+                    if next2nextDisc in AdjacencyDict[nextDisc]:
+                        # if the next disc is in current player's color, we are done:
+                        if self.board.getDiscColor(next2nextDisc) == discColor:
                             return True
-                        elif self.board.getDiscColor(tempB) == cont:
-                            tempA = tempB
-                            tempB = tempA + d
-                        else: break
-                    else: break
+                        # if the next disc is in opponent's color, we continue to the following disc:
+                        elif self.board.getDiscColor(next2nextDisc) == cont:
+                            nextDisc = next2nextDisc
+                            next2nextDisc = nextDisc + direction
+                        else: break # if the next disc is neither black nor white, it is empty
+                    else: break # if neighboring disc is not in opponent's color, the move is not valid
 
         return flag
 
@@ -215,9 +219,13 @@ class GameMoves (object):
         else: return True
 
     def updateColorDiscs(self,disc):
-        """ colors adjacent discs in accordance with chosen location for disc on board and game rules
+        """
+        colors adjacent discs in accordance with chosen location for disc on board and game rules
+         disc is player's chosen move
          disc is an int representing disc number
          """
+
+       # check the color of current player:
         self.player = self.whoIsNext()
         discColor = self.player.getPlayerColor()
         if discColor == "W":
@@ -227,35 +235,40 @@ class GameMoves (object):
 
         nbrList = [] # this is the list of neighbors
         # check which discs need to be colored
-        for neighbor in AdjacencyDict[disc]:
+        for neighbor in AdjacencyDict[disc]:  # looping over all adjacent discs
             flag = False
             counter = 0
-            if self.board.getDiscColor(neighbor) == cont:
-                d = neighbor - disc
-                tempA = neighbor
-                tempB = tempA + d
+            if self.board.getDiscColor(neighbor) == cont:  # check if adjacent disc is in opponent's color
+                direction = neighbor - disc
+                nextDisc = neighbor
+                next2nextDisc = nextDisc + direction
                 while not flag:
-                    counter += 1
-                    if tempB in AdjacencyDict[tempA]:
-                        if self.board.getDiscColor(tempB) == discColor:
+                    counter += 1 # accounting for number of discs consecutively
+                    # check if next disc is adjacent (for example, disc 8 is not adjacent to 9. 9 is in a different row)
+                    if next2nextDisc in AdjacencyDict[nextDisc]:
+                        # if the next disc is in current player's color, we are done:
+                        if self.board.getDiscColor(next2nextDisc) == discColor:
                             flag = True
+                            # the adjacent disc and number of consecutively discs are added to the list:
                             nbrList.append([neighbor, counter])
-                        elif self.board.getDiscColor(tempB) == cont:
-                            tempA = tempB
-                            tempB = tempA + d
-                        else: break
-                    else:
-                        break
+                        # if the next disc is in opponent's color, we continue to the following disc:
+                        elif self.board.getDiscColor(next2nextDisc) == cont:
+                            nextDisc = next2nextDisc
+                            next2nextDisc = nextDisc + direction
+                        else: break  # if the next disc is neither black nor white, it is empty and hence invalid
+                    else: break
 
                 if flag:
+                    # now we have a list of all neighboring list to be colored
+                    # and the number of following discs to be colored as well
                     nbrList.append([neighbor, counter])
         # create a list of the discs which need to be colored
         self.updateList=[]
         self.updateList.append(disc)
         for nbr in nbrList:
-            d = nbr[0] - disc
-            for count in range(nbr[1]):
-                x= nbr[0] + d*count
+            angle = nbr[0] - disc
+            for distance in range(nbr[1]):
+                x = nbr[0] + angle * distance
                 self.updateList.append(x)
 
         # update discs in main dictionary
@@ -270,13 +283,13 @@ class GameMoves (object):
 class BoardVisualization:
     """
     creating a GUI of the game using tkinter
-    This is also the main loop of the game
+    This is the main loop of the game
     """
     def __init__(self):
-        """Initializes a visualization with the specified parameters"""
+        """Initializes visualization with the specified parameters"""
 
         self.board = Board()
-        self.play = GameMoves(self.board)
+        self.play = GameController(self.board)
         self.player = self.play.whoIsNext()
 
         # Initialize a drawing surface
@@ -354,13 +367,10 @@ class BoardVisualization:
     def _status_string(self):
         """Returns an appropriate status string to print:
         what player is playing now, number of black and white discs and what percent of the board is full"""
-        #self.num_black = self.board.numBlackandWhite()[0]
-        #self.num_white = self.board.numBlackandWhite()[1]
-        #self.percent_full = round(100*((self.num_black + self.num_white)/64))
+
         if self.play.whoIsNext().getPlayerColor() == "W": self.playing="WHITE"
         else: self.playing = "BLACK"
         return f"Now playing: {str(self.playing)}"
-               #(self.num_white, self.num_black, self.percent_full)
 
     def _status_string2(self):
         """Returns an appropriate status string to print:
@@ -369,7 +379,6 @@ class BoardVisualization:
         self.num_white = self.board.numBlackandWhite()[1]
         self.percent_full = round(100*((self.num_black + self.num_white)/64))
         return f"White: {self.num_white},  Black: {self.num_black};  {self.percent_full}% filled"
-               #(self.num_white, self.num_black, self.percent_full)
 
     def _map_coords(self,x,y):
         """ Maps grid positions to window positions (in pixels)"""
@@ -393,7 +402,7 @@ class BoardVisualization:
         if not self.play.isPossibleMove():
             self.player = self.play.whoIsNext()
 
-            # popup message
+            # popup message "No possible moves":
             self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
                                             font="Times 20 bold", text="No possible moves ")
             self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
@@ -406,7 +415,7 @@ class BoardVisualization:
             if color == "B": color = "BLACK"
             else: color="WHITE"
 
-            # update status text
+            # update status text:
             self.w.delete(self.status_text)
             self.w.delete(self.status_text2)
             self.w.delete(self.line1)
@@ -426,7 +435,7 @@ class BoardVisualization:
             self.w.delete(self.text4)
             self.w.delete(self.r4)
             updateList = self.play.updateColorDiscs(disc) # updating main dictionary
-            # updating visualization
+            # updating visualization:
             color = self.board.getDiscColor(disc)
             if color == "W": color = "white"
             else: color = "black"
@@ -520,7 +529,7 @@ class BoardVisualization:
         manager = Simulations.SimulationManager() # initializing the sumulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(10):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(500):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)
@@ -569,8 +578,6 @@ class BoardVisualization:
 class NoPossibleMovesException(Exception):
     """ NoPossibleMovesException is raised by the possible moves() method in the simulations
     class to indicate that there are no possible moves for player in current situation"""
-
-
 
 
 """STARTING THE GAME"""

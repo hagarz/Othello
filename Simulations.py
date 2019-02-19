@@ -1,15 +1,22 @@
 __author__ = 'Hagar'
-import random, multiprocessing as mp, time, os
+import random, multiprocessing as mp, time
 
 
 class Simulations(object):
     """Computer chooses its next step by performing multiple simulations of the game"""
     def __init__(self,arguments):
+        """
+        discDict - a dictionary, represent the color of discs on the board
+        player1Color - a string, the color of the current player
+        player1Moves, player2Moves - an int, number of moves made by each player
+        adjacencyDict - a dictionary, representing adjacencies for each disc
+        possibleMovesList - a list of all possible moves for current player, with current board state
+          """
+
         # encapsulating arguments inserted to args_list as tuple:
         discDict, player1Color, player1Moves, player2Moves, adjacencyDict = arguments
 
         self.discDictCopy = discDict.copy()
-        self.winnersDict={}
         self.player1c = player1Color
         if self.player1c == "B": self.player2c = "W"
         else: self.player2c = "B"
@@ -19,6 +26,7 @@ class Simulations(object):
         self.AdjacencyDict = adjacencyDict
         self.count = 0
         self.possibleMovesList = self.possible_moves()
+        self.winnersDict={}
 
     def simulation(self):
         """ a move (disc) is randomly chosen from a list of possible moves,
@@ -38,17 +46,22 @@ class Simulations(object):
         """ iterates over main dictionary to create a list of possible moves"""
         psbleMovesList=[]
         for i in self.discDictCopy:
-            if self.discDictCopy[i] is None:
-                if self.valid_moves(i):
-                    psbleMovesList.append(i)
-        if len(psbleMovesList) > 0:
+            if self.discDictCopy[i] is None:  # for every empty tile on the board
+                if self.valid_moves(i):  # check if a disc can be placed
+                    psbleMovesList.append(i)  # then add to lis of possible moves
+        if len(psbleMovesList) > 0: # if the list of possible moves is not empty, return list
             self.count = 0
             return psbleMovesList
         else:
+            # if there were no possible moves less than twice, increment count by 1 and raise NoPossibleMovesException
             if self.count < 2:
                 self.count += 1
                 raise NoPossibleMovesException
             else:
+                # if there were no possible moves more than twice,
+                # it means there are no more possible moves in the game for all players
+                # the empty tile will be filled with a neutral color "N"
+                # thus all tiles will be filled and game will be over
                 counter = 0
                 for k in self.discDictCopy:
                     if self.discDictCopy[k] is None:
@@ -57,7 +70,11 @@ class Simulations(object):
                 raise NoPossibleMovesException
 
     def valid_moves(self,disc):
-        """Checks if move is valid, returns boolean"""
+        """
+        Checks if move is valid, returns boolean.
+        disc is player's chosen move
+        disc is an int representing disc number
+         """
         discColor = self.now_playing()
         if discColor == "W":
             cont = "B"
@@ -67,21 +84,22 @@ class Simulations(object):
         flag = False
 
         for neighbor in self.AdjacencyDict[disc]:
-            if self.get_disc_color(neighbor) == cont:
-                d = neighbor - disc
-                tempA = neighbor
-                tempB = tempA + d
+            if self.get_disc_color(neighbor) == cont: # check if adjacent disc is in opponent's color
+                direction = neighbor - disc
+                next_disc = neighbor
+                next2next_disc = next_disc + direction
                 while not flag:
-                    if tempB in self.AdjacencyDict[tempA]:
-                        if self.get_disc_color(tempB) == discColor:
+                    # check if next disc is adjacent (for example, disc 8 is not adjacent to 9. 9 is in a different row)
+                    if next2next_disc in self.AdjacencyDict[next_disc]:
+                        # if the next disc is in current player's color, we are done:
+                        if self.get_disc_color(next2next_disc) == discColor:
                             return True
-                        elif self.get_disc_color(tempB) == cont:
-                            tempA = tempB
-                            tempB = tempA + d
-                        else:
-                            break
-                    else:
-                        break
+                        # if the next disc is in opponent's color, we continue to the following disc:
+                        elif self.get_disc_color(next2next_disc) == cont:
+                            next_disc = next2next_disc
+                            next2next_disc = next_disc + direction
+                        else: break  # if the next disc is neither black nor white, it is empty
+                    else: break  # if neighboring disc is not in opponent's color, the move is not valid
         return flag
 
     def now_playing(self):
@@ -98,6 +116,7 @@ class Simulations(object):
             return self.player2Moves
 
     def update_num_moves(self, player):
+        """increment player's number of moves by 1"""
         if player == self.player1c:
             self.player1Moves +=1
         elif player == self.player2c:
@@ -116,48 +135,55 @@ class Simulations(object):
                 return False
         return True
 
-
     def updateDiscsColor(self,disc):
         """ colors adjacent discs in accordance with chosen disc and game rules
+         disc is player's chosen move
          disc is an int representing disc number
          """
+
+        # check the color of current player:
         discColor = self.now_playing()
         if discColor == "W":
             cont = "B"
         else:
             cont = "W"
 
-        nbrList = []
+        nbrList = []  # this is the list of neighbors
         # check which discs need to be colored
-        for neighbor in self.AdjacencyDict[disc]:
+        for neighbor in self.AdjacencyDict[disc]:  # looping over all adjacent discs
             flag = False
             counter = 0
-            if self.get_disc_color(neighbor) == cont:
-                d = neighbor - disc # this is the direction
-                tempA = neighbor
-                tempB = tempA + d
+            if self.get_disc_color(neighbor) == cont:  # check if adjacent disc is in opponent's color
+                direction = neighbor - disc # this is the direction
+                next_disc = neighbor
+                next2next_disc = next_disc + direction
                 while not flag:
-                    counter += 1
-                    if tempB in self.AdjacencyDict[tempA]:
-                        if self.get_disc_color(tempB) == discColor:
+                    counter += 1  # accounting for number of discs consecutively
+                    # check if next disc is adjacent (for example, disc 8 is not adjacent to 9. 9 is in a different row)
+                    if next2next_disc in self.AdjacencyDict[next_disc]:
+                        # if the next disc is in current player's color, we are done:
+                        if self.get_disc_color(next2next_disc) == discColor:
                             flag = True
+                            # the adjacent disc and number of consecutively discs are added to the list:
                             nbrList.append([neighbor, counter])
-                        elif self.get_disc_color(tempB) == cont:
-                            tempA = tempB
-                            tempB = tempA + d
+                            # if the next disc is in opponent's color, we continue to the following disc:
+                        elif self.get_disc_color(next2next_disc) == cont:
+                            next_disc = next2next_disc
+                            next2next_disc = next_disc + direction
                         else: break
                     else: break
 
                 if flag:
+
                     nbrList.append([neighbor, counter])
 
         # create a list of the discs which need to be colored
         updateList=[]
         updateList.append(disc)
         for nbr in nbrList:
-            d = nbr[0] - disc
-            for count in range(nbr[1]):
-                x = nbr[0] + d*count
+            angle = nbr[0] - disc
+            for distance in range(nbr[1]):
+                x = nbr[0] + angle * distance
                 updateList.append(x)
 
         # update discs in main dictionary
@@ -172,12 +198,13 @@ class Simulations(object):
 
             try:
                 move = random.choice(self.possible_moves())
-                self.update_dict(move, player) # update move in discs' dictionary
-                self.updateDiscsColor(move)   # color neighbor discs as result of chosen move
-                self.update_num_moves(player) # add move to number of moves for player
-            except NoPossibleMovesException:   # if there is no possible move, an exception is raised and the turn goes to the next player
-                self.update_num_moves(player)
+                self.update_dict(move, player)  # update move in discs' dictionary
+                self.updateDiscsColor(move)     # color neighbor discs as result of chosen move
+                self.update_num_moves(player)   # add move to number of moves for player
+            except NoPossibleMovesException:    # if there is no possible move, an exception is raised and the turn goes to the next player
+                self.update_num_moves(player)   # increment player's number of moves by 1
 
+        # counting number of discs for each color
         count1=0
         count2=0
         for disc in self.discDictCopy:
@@ -185,26 +212,38 @@ class Simulations(object):
                 count1 += 1
             else:
                 count2 += 1
+        # if there are more discs for firs player, meaning the first player won,
+        #  first move is added to the dictionary "winnersDict"
         if count1 > count2:
             self.winnersDict[firstMove] = self.winnersDict.get(firstMove,0) + 1
 
 
 class SimulationManager(object):
-    """ using multiprocessing to run simulations in parallel"""
+    """ using multiprocessing to run simulations in parallel
+     parallelizing the execution of a function across multiple input values,
+      distributing the input data across processes (data parallelism)"""
     def __init__(self):
-        self.pool = mp.Pool(5) # determining the number of
+        self.pool = mp.Pool(5) # determining the number of processes
 
     def go_to(self, args):
-        # this method
+        """ this method calls simulation method in Simulations class with arguments sent as tuple"""
         return Simulations(args).simulation()
 
     def run(self,args_list):
+        """
+        This method chops the args_list into a number of chunks which it submits to the process pool as separate tasks
+        pool.map supports only one iterable argument, hence the use of args_list
+         args_list is a list of identical tuples, each tuple contains the arguments required to run the simulation
+         pool.map iterates over the tuples in args_list,
+         each tuple sent to the go_to method, then creates an object of Simulations
+         """
         result = self.pool.map(self.go_to, args_list)
         return result
 
     def __getstate__(self):
-        """ returned object is pickled as the contents for the instance,
-         instead of the contents of the instance’s dictionary"""
+        """
+        returned object is pickled as the contents for the instance, instead of the contents of the instance’s dictionary
+        """
         pass
 
 
@@ -214,12 +253,12 @@ class NoPossibleMovesException(Exception):
     class to indicate that there are no possible moves for player in current situation"""
 
 
-
 if __name__ == '__main__':
     """this part is only relevant when running simulations from this file and not as part of the game """
 
     start_time = time.time()
     manager = SimulationManager()
+
     disc_dict = {1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None, 10: None, 11: None, 12: None, 13: None, 14: None, 15: None, 16: None, 17: None, 18: None, 19: None, 20: None, 21: None, 22: None, 23: None, 24: None, 25: None, 26: None, 27: None, 28: 'W', 29: 'B', 30: None, 31: None, 32: None, 33: None, 34: None, 35: 'W', 36: 'W', 37: 'W', 38: None, 39: None, 40: None, 41: None, 42: None, 43: None, 44: None, 45: None, 46: None, 47: None, 48: None, 49: None, 50: None, 51: None, 52: None, 53: None, 54: None, 55: None, 56: None, 57: None, 58: None, 59: None, 60: None, 61: None, 62: None, 63: None, 64: None}
     player1_color = "B"
     player1_moves = 0
@@ -228,18 +267,17 @@ if __name__ == '__main__':
 
     args = (disc_dict,player1_color,player1_moves,player2_moves,adjacency_dict)
     args_list = []
-    for i in range(100):
+    for i in range(1000):
         args_list.append(args)
 
     result = manager.run(args_list)
 
-    print("result =", result)
     end_time = time.time() - start_time
     print(f"time: {end_time}")
 
     resultsDict = {}
-    for dict in result:
-        for i in dict:
+    for r in result:
+        for i in r:
             resultsDict[i] = resultsDict.get(i, 0) + 1
 
     maxMove = 0
