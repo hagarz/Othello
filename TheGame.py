@@ -594,7 +594,7 @@ class BoardVisualization:
         manager = Simulations.SimulationManager() # initializing the simulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(3):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(1000):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)
@@ -604,9 +604,9 @@ class BoardVisualization:
 
         resultsDict = {}
         for Rdict in result: # for the result of each simulation
-            for i in Rdict:
-                if Rdict[i] == 1: # if simulation was successful,
-                    resultsDict[i] = resultsDict.get(i, 0) + 1  # increment result
+            RdictValue = Rdict.__iter__().__next__()  #  dictionary key
+            if Rdict[RdictValue] == 1: # if simulation was successful,
+                resultsDict[RdictValue] = resultsDict.get(RdictValue, 0) + 1  # increment result
         maxMove = 0
         winner = 0
         for move in resultsDict:
@@ -614,8 +614,7 @@ class BoardVisualization:
                 maxMove = resultsDict[move]
                 winner = move
         if winner == 0: # if all simulations lost the game
-            for j in result[0]:
-                disc = j
+            disc = result[0].__iter__().__next__() # choose the first move of the first game
         else: disc = winner
 
         updateList = self.play.updateColorDiscs(disc)
