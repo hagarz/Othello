@@ -204,6 +204,7 @@ class Simulations(object):
             except NoPossibleMovesException:    # if there is no possible move, an exception is raised and the turn goes to the next player
                 self.update_num_moves(player)   # increment player's number of moves by 1
 
+        self.winnersDict[firstMove] = 0
         # counting number of discs for each color
         count1=0
         count2=0
