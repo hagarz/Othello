@@ -213,8 +213,14 @@ class GameController (object):
         Checks if game over
         return: True or False
         """
+        w = 0
+        b = 0
         for key in range (1,65):
-            if self.board.getDiscColor(key) is None:
+            if self.board.getDiscColor(key) == "B":
+                b += 1
+            if self.board.getDiscColor(key) == "W":
+                w += 1
+            if self.board.getDiscColor(key) is None and b>0 and w>0:
                 return False
         else: return True
 
@@ -410,16 +416,15 @@ class BoardVisualization:
 
             # update move, so other player is next
             self.player.updateNumMoves()
-            self.player = self.play.whoIsNext()
-            color = self.player.getPlayerColor()
-            if color == "B": color = "BLACK"
-            else: color="WHITE"
-
             # update status text:
             self.w.delete(self.status_text)
             self.w.delete(self.status_text2)
             self.w.delete(self.line1)
             self.w.delete(self.text5)
+            self.player = self.play.whoIsNext()
+            color = self.player.getPlayerColor()
+            if color == "B": color = "BLACK"
+            else: color="WHITE"
             self.status_text = self.w.create_text(
                 20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
             self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
@@ -462,7 +467,7 @@ class BoardVisualization:
                 if black > white: winner = "black"
                 elif black == white: winner = "no one"
                 else: winner = "white"
-                self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="lime",
+                self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="Yellow",
                                                 font="Times 30 bold",text="GAME OVER\n"+"    "+str(winner)+" wins!")
                 self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
                 self.w.tag_lower(self.r3, self.text3)
@@ -480,7 +485,7 @@ class BoardVisualization:
 
         self.master.update()
 
-        # checking if game over:
+        # # checking if game over:
         if self.play.isGameOver():
             black, white = self.board.numBlackandWhite()
             if black > white:
@@ -489,7 +494,7 @@ class BoardVisualization:
                 winner = "no one"
             else:
                 winner = "white"
-            self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="lime",
+            self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="Yellow",
                                             font="Times 30 bold", text="GAME OVER\n" + "    " + str(winner) + " wins!")
             self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
             self.w.tag_lower(self.r3, self.text3)
@@ -517,35 +522,100 @@ class BoardVisualization:
                 self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
                 self.w.tag_lower(self.r3, self.text3)
 
+            else:
+                # checking if there is a possible move for human player
+                if not self.play.isPossibleMove():
+                    self.player = self.play.whoIsNext()
+                    # popup message "No possible moves":
+                    self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
+                                                    font="Times 20 bold", text="No possible moves ")
+                    self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
+                    self.w.tag_lower(self.r4, self.text4)
+                    # update move, so other player is next
+                    self.player.updateNumMoves()
+                    # update status text:
+                    self.w.delete(self.status_text)
+                    self.w.delete(self.status_text2)
+                    self.w.delete(self.line1)
+                    self.w.delete(self.text5)
+                    self.player = self.play.whoIsNext()
+                    color = self.player.getPlayerColor()
+                    if color == "B":
+                        color = "BLACK"
+                    else:
+                        color = "WHITE"
+                    self.status_text = self.w.create_text(
+                        20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
+                    self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                                           text=self._status_string2())
+                    self.text5 = self.w.create_text(
+                        138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
+                    self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
+
+                    if not self.play.whoIsNext().doesPlayFirst():
+                        self.text6 = self.w.create_text(250, 250, anchor=NW, font="Times 18 bold",
+                                                        text="Computer is thinking...")
+                        self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
+                        self.w.tag_lower(self.r6, self.text6)
+                        self.master.update()
+                        self.computerPlaying()
+
+                        if self.play.isGameOver():
+                            black, white = self.board.numBlackandWhite()
+                            if black > white:
+                                winner = "black"
+                            elif black == white:
+                                winner = "no one"
+                            else:
+                                winner = "white"
+                            self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="lime",
+                                                            font="Times 30 bold",
+                                                            text="GAME OVER\n" + "    " + str(winner) + " wins!")
+                            self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
+                            self.w.tag_lower(self.r3, self.text3)
+                    else:
+                        self.w.delete(self.text4)
+                        self.w.delete(self.r4)
+                        self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
+                                                        font="Times 20 bold", text="Play")
+                        self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
+
+
     def computerPlaying(self):
-        """activates the comuter as a player by using simulation (file: Simulations)
+        """activates the computer as a player by using simulation (file: Simulations)
         returns: disc number"""
         # arguments for the simulations:
+
         discDictCopy = self.board.getDiscsDict().copy()
         player1Color = self.play.whoIsNext().getPlayerColor()
         player1Moves = self.play.whoIsNext().GetNumMoves()
         player2Moves = self.play.whoIsNext().GetNumMoves()+1
 
-        manager = Simulations.SimulationManager() # initializing the sumulation manager
+        manager = Simulations.SimulationManager() # initializing the simulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(500):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(1000):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)
 
-        resultsDict = {}
-        for dict in result:
-            for i in dict:
-                resultsDict[i] = resultsDict.get(i, 0) + 1
+        self.w.delete(self.line1)
+        self.w.delete(self.text5)
 
+        resultsDict = {}
+        for Rdict in result: # for the result of each simulation
+            RdictValue = Rdict.__iter__().__next__() # this is the key fo
+            if Rdict[RdictValue] == 1: # if simulation was successful,
+                resultsDict[RdictValue] = resultsDict.get(RdictValue, 0) + 1  # increment result
         maxMove = 0
         winner = 0
         for move in resultsDict:
             if resultsDict[move] > maxMove:
                 maxMove = resultsDict[move]
                 winner = move
-        disc = winner
+        if winner == 0: # if all simulations lost the game
+            disc = result[0].__iter__().__next__() # choose the first move of the first game
+        else: disc = winner
 
         updateList = self.play.updateColorDiscs(disc)
         color = self.board.getDiscColor(disc)
@@ -563,7 +633,11 @@ class BoardVisualization:
             x1, y1 = xa * 55, ya * 55
             self.w.create_oval([x1 - 20, y1 - 20, x1 + 20, y1 + 20], fill=color)
 
-        # Update text
+        # Update status text
+        self.w.delete(self.text4)
+        self.w.delete(self.r4)
+        self.w.delete(self.text5)
+        self.w.delete(self.line1)
         self.w.delete(self.status_text)
         self.w.delete(self.status_text2)
         self.status_text = self.w.create_text(
