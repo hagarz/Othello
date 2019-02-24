@@ -206,8 +206,8 @@ class Simulations(object):
 
         self.winnersDict[firstMove] = 0
         # counting number of discs for each color
-        count1=0
-        count2=0
+        count1 = 0
+        count2 = 0
         for disc in self.discDictCopy:
             if self.discDictCopy[disc] == self.player1c:
                 count1 += 1
