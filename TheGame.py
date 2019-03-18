@@ -297,7 +297,6 @@ class GameController (object):
     def computerPlaying(self):
         """activates the computer as a player by using simulation (file: Simulations)
         returns: disc number"""
-        print('computer playing')
         # arguments for the simulations:
         discDictCopy = self.board.getDiscsDict().copy()
         player1Color = self.whoIsNext().getPlayerColor()

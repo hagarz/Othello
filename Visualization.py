@@ -166,9 +166,7 @@ class BoardVisualization:
 
             else:
                 # checking if there is a possible move for player
-                print("checking",self.board.numBlackandWhite())
                 if not self.controller.anyPossibleMoves():
-                    print("in")
                     self.player = self.controller.whoIsNext()
 
                     # popup message "No possible moves":
@@ -237,9 +235,7 @@ class BoardVisualization:
 
             else:
                 # checking if there is a possible move for player
-                print('checking2',self.board.numBlackandWhite())
                 if not self.controller.anyPossibleMoves():
-                    print('in2')
                     self.player = self.controller.whoIsNext()
                     # popup message "No possible moves":
                     self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
@@ -300,7 +296,6 @@ class BoardVisualization:
 
     def computerPlayingVisual(self,disc,updateList):
         """creates and updates visualization following 'computer playing'  """
-        print("computer vis")
         self.w.delete(self.line1)
         self.w.delete(self.text5)
 
