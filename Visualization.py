@@ -166,7 +166,9 @@ class BoardVisualization:
 
             else:
                 # checking if there is a possible move for player
+                print("checking",self.board.numBlackandWhite())
                 if not self.controller.anyPossibleMoves():
+                    print("in")
                     self.player = self.controller.whoIsNext()
 
                     # popup message "No possible moves":
@@ -235,7 +237,9 @@ class BoardVisualization:
 
             else:
                 # checking if there is a possible move for player
+                print('checking2',self.board.numBlackandWhite())
                 if not self.controller.anyPossibleMoves():
+                    print('in2')
                     self.player = self.controller.whoIsNext()
                     # popup message "No possible moves":
                     self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
@@ -262,7 +266,8 @@ class BoardVisualization:
                     self.text5 = self.w.create_text(
                         138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
                     self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-
+                    self.master.update()
+                    time.sleep(3)
                     if not self.controller.whoIsNext().doesPlayFirst():
                         self.text6 = self.w.create_text(250, 250, anchor=NW, font="Times 18 bold",
                                                         text="Computer is thinking...")
@@ -270,6 +275,7 @@ class BoardVisualization:
                         self.w.tag_lower(self.r6, self.text6)
                         self.master.update()
                         self.controller.computerPlaying()
+                        self.w.delete(self.text5)
 
                         # checking if game over before continuing with the game
                         if self.controller.isGameOver():
@@ -294,7 +300,7 @@ class BoardVisualization:
 
     def computerPlayingVisual(self,disc,updateList):
         """creates and updates visualization following 'computer playing'  """
-
+        print("computer vis")
         self.w.delete(self.line1)
         self.w.delete(self.text5)
 
@@ -326,5 +332,4 @@ class BoardVisualization:
                                                text=self._status_string2())
         self.w.delete(self.text6)
         self.w.delete(self.r6)
-
-
+        self.master.update()

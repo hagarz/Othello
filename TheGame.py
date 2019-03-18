@@ -10,7 +10,7 @@ if sys.version_info[0] < 3:
 
 """
     Adjacency list loaded from given csv file
-"""
+""" 
 def load_Adj():
     """ a dictionary representing adjacencies for each disc """
     AdjacencyDict = {}
@@ -297,7 +297,7 @@ class GameController (object):
     def computerPlaying(self):
         """activates the computer as a player by using simulation (file: Simulations)
         returns: disc number"""
-
+        print('computer playing')
         # arguments for the simulations:
         discDictCopy = self.board.getDiscsDict().copy()
         player1Color = self.whoIsNext().getPlayerColor()
@@ -308,7 +308,7 @@ class GameController (object):
         manager = Simulations.SimulationManager()  # initializing the simulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(100):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(10):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)
