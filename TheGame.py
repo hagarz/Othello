@@ -332,7 +332,7 @@ class GameController (object):
 
         updateList = self.updateColorDiscs(disc)
 
-        self.visualization.computerPlayingVisual(disc, updateList)
+        return disc, updateList
 
 
 

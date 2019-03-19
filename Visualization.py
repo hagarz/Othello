@@ -77,7 +77,6 @@ class BoardVisualization:
         self.w.delete(self.text5)
         self.w.delete(self.text6)
         self.w.delete(self.r6)
-
         self.line1 = self.w.create_line(15, 25, 200, 25, dash=(4, 2), fill="yellow")
         self.w.delete(self.line1)
 
@@ -126,8 +125,8 @@ class BoardVisualization:
 
         # checking if chosen move is valid, if yes updating accordingly
         if self.controller.isValidMove(disc):
-            self.w.delete(self.text2)
-            self.w.delete(self.r)
+            # self.w.delete(self.text2)
+            # self.w.delete(self.r)
             self.w.delete(self.text4)
             self.w.delete(self.r4)
             updateList = self.controller.updateColorDiscs(disc) # updating main dictionary
@@ -143,7 +142,6 @@ class BoardVisualization:
                 x1, y1 = xa * 55, ya * 55
                 self.w.create_oval([x1 - 20, y1 - 20, x1 + 20, y1 + 20], fill=color)
 
-
             # Update status text
             self.w.delete(self.status_text)
             self.w.delete(self.status_text2)
@@ -154,148 +152,97 @@ class BoardVisualization:
 
             # checking if game over
             if self.controller.isGameOver():
-                winner = self.controller.getWinner()
-                self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="Yellow",
-                                                font="Times 30 bold",text="GAME OVER\n"+"    "+str(winner)+" wins!")
-                self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
-                self.w.tag_lower(self.r3, self.text3)
-                self.master.update()
-                time.sleep(4)
-                self.master.quit()
-                self.master.destroy()
+                self.done()
 
             else:
                 # checking if there is a possible move for player
                 if not self.controller.anyPossibleMoves():
-                    self.player = self.controller.whoIsNext()
+                    self.no_possible_moves()
 
-                    # popup message "No possible moves":
-                    self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
-                                                    font="Times 20 bold", text="No possible moves ")
-                    self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
-                    self.w.tag_lower(self.r4, self.text4)
-
-                    # update number of moves, so other player is next
-                    self.player.updateNumMoves()
-                    # update status text:
-                    self.w.delete(self.status_text)
-                    self.w.delete(self.status_text2)
-                    self.w.delete(self.line1)
-                    self.w.delete(self.text5)
-                    self.player = self.controller.whoIsNext()
-                    color = self.player.getPlayerColor()
-                    if color == "B":
-                        color = "BLACK"
-                    else:
-                        color = "WHITE"
-                    self.status_text = self.w.create_text(
-                        20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
-                    self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
-                                                           text=self._status_string2())
-                    self.text5 = self.w.create_text(
-                        138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
-                    self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-                    self.master.update()
-                    time.sleep(3)
-                    self.w.delete(self.text4)
-                    self.w.delete(self.r4)
         else:  # if chosen move is not valid, a message will appear
             self.w.delete(self.text4)
             self.w.delete(self.r4)
-            self.w.delete(self.text2)
-            self.w.delete(self.r)
+
             # "invalid move" popup message
             self.text2 = self.w.create_text(250, 250, anchor=CENTER,fill="red",
                                             font="Times 18 bold",text="Invalid move. Try again")
             self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
             self.w.tag_lower(self.r, self.text2)
-
-        #self.master.update()
+            self.master.update_idletasks()
+            time.sleep(1.2)
+            self.w.delete(self.text2)
+            self.w.delete(self.r)
 
         # activating computer as a player
         if not self.controller.whoIsNext().doesPlayFirst() and not self.controller.isGameOver():
-            self.text6 = self.w.create_text(250, 250, anchor=NW,font="Times 18 bold", text="Computer is thinking...")
-            self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
-            self.w.tag_lower(self.r6, self.text6)
-            self.master.update()
-            self.controller.computerPlaying()
+            self.computerPlayingVisual()
 
             # checking if game over before continuing with the game
             if self.controller.isGameOver():
-                winner = self.controller.getWinner()
-                self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="yellow",
-                                                font="Times 30 bold",
-                                                text="GAME OVER\n" + "    " + str(winner) + " wins!")
-                self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
-                self.w.tag_lower(self.r3, self.text3)
-                self.master.update()
-                time.sleep(4)
-                self.master.quit()
-                self.master.destroy()
+                self.done()
 
             else:
                 # checking if there is a possible move for player
                 if not self.controller.anyPossibleMoves():
-                    self.player = self.controller.whoIsNext()
-                    # popup message "No possible moves":
-                    self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
-                                                    font="Times 20 bold", text="No possible moves ")
-                    self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
-                    self.w.tag_lower(self.r4, self.text4)
-                    # update move, so other player is next
-                    self.player.updateNumMoves()
-                    # update status text:
-                    self.w.delete(self.status_text)
-                    self.w.delete(self.status_text2)
-                    self.w.delete(self.line1)
-                    self.w.delete(self.text5)
-                    self.player = self.controller.whoIsNext()
-                    color = self.player.getPlayerColor()
-                    if color == "B":
-                        color = "BLACK"
-                    else:
-                        color = "WHITE"
-                    self.status_text = self.w.create_text(
-                        20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
-                    self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
-                                                           text=self._status_string2())
-                    self.text5 = self.w.create_text(
-                        138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
-                    self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-                    self.master.update()
-                    time.sleep(3)
-                    if not self.controller.whoIsNext().doesPlayFirst():
-                        self.text6 = self.w.create_text(250, 250, anchor=NW, font="Times 18 bold",
-                                                        text="Computer is thinking...")
-                        self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
-                        self.w.tag_lower(self.r6, self.text6)
-                        self.master.update()
-                        self.controller.computerPlaying()
-                        self.w.delete(self.text5)
+                    self.no_possible_moves()
 
-                        # checking if game over before continuing with the game
-                        if self.controller.isGameOver():
-                            winner = self.controller.getWinner()
-                            self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="yellow",
-                                                            font="Times 30 bold",
-                                                            text="GAME OVER\n" + "    " + str(winner) + " wins!")
-                            self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
-                            self.w.tag_lower(self.r3, self.text3)
-                            self.master.update()
-                            time.sleep(4)
-                            self.master.quit()
-                            self.master.destroy()
-                    else:
-                        self.master.update()
-                        time.sleep(3)
-                        self.w.delete(self.text4)
-                        self.w.delete(self.r4)
-                        self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
-                                                        font="Times 20 bold", text="Play")
-                        self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
+                else:
+                    self.master.update_idletasks()
 
-    def computerPlayingVisual(self,disc,updateList):
+
+    def no_possible_moves(self):
+        """ when there are no pissivle moves, method initiates a popup message and update visual accordingly"""
+        self.player = self.controller.whoIsNext()
+
+        # popup message "No possible moves":
+        if not self.controller.whoIsNext().doesPlayFirst():
+            who = "for computer"
+        else:
+            who = " "
+        self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
+                                        font="Times 20 bold", text="No possible moves"+str(who))
+        self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
+        self.w.tag_lower(self.r4, self.text4)
+
+        # update number of moves, so other player is next
+        self.player.updateNumMoves()
+        # update status text:
+        self.w.delete(self.status_text)
+        self.w.delete(self.status_text2)
+        self.w.delete(self.line1)
+        self.w.delete(self.text5)
+        self.player = self.controller.whoIsNext()
+        color = self.player.getPlayerColor()
+        if color == "B":
+            color = "BLACK"
+        else:
+            color = "WHITE"
+        self.status_text = self.w.create_text(
+            20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
+        self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                               text=self._status_string2())
+        self.text5 = self.w.create_text(
+            138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
+        self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
+        self.master.update_idletasks()
+        time.sleep(3)
+        self.w.delete(self.text4)
+        self.w.delete(self.r4)
+
+        # who is next
+        if not self.controller.whoIsNext().doesPlayFirst() and not self.controller.isGameOver():
+            self.computerPlayingVisual()
+
+
+    def computerPlayingVisual(self):
         """creates and updates visualization following 'computer playing'  """
+        self.text6 = self.w.create_text(250, 250, anchor=NW, font="Times 18 bold",
+                                        text="Computer is thinking...")
+        self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
+        self.w.tag_lower(self.r6, self.text6)
+        self.master.update_idletasks()
+
+        disc, updateList = self.controller.computerPlaying()
         self.w.delete(self.line1)
         self.w.delete(self.text5)
 
@@ -327,4 +274,23 @@ class BoardVisualization:
                                                text=self._status_string2())
         self.w.delete(self.text6)
         self.w.delete(self.r6)
-        self.master.update()
+        self.master.update_idletasks()
+
+        if not self.controller.anyPossibleMoves() and not self.controller.isGameOver():
+            self.no_possible_moves()
+
+        if self.controller.isGameOver():
+            self.done()
+
+
+    def done(self):
+        """when game over"""
+        winner = self.controller.getWinner()
+        self.text3 = self.w.create_text(250, 270, anchor=CENTER, fill="Yellow",
+                                        font="Times 30 bold", text="GAME OVER\n" + "    " + str(winner) + " wins!")
+        self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
+        self.w.tag_lower(self.r3, self.text3)
+        self.master.update_idletasks()
+        time.sleep(4)
+        self.master.quit()
+        self.master.destroy()
