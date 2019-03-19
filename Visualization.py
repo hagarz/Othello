@@ -2,6 +2,7 @@ __author__ = 'Hagar'
 
 import math,time, Simulations
 from tkinter import *
+from tkinter import _tkinter
 from TheGame import Board, GameController, load_Adj
 
 
@@ -191,47 +192,48 @@ class BoardVisualization:
 
 
     def no_possible_moves(self):
-        """ when there are no pissivle moves, method initiates a popup message and update visual accordingly"""
-        self.player = self.controller.whoIsNext()
+       while not self.controller.anyPossibleMoves():
+            """ when there are no pissivle moves, method initiates a popup message and update visual accordingly"""
+            self.player = self.controller.whoIsNext()
 
-        # popup message "No possible moves":
-        if not self.controller.whoIsNext().doesPlayFirst():
-            who = " for computer"
-        else:
-            who = " "
-        self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
-                                        font="Times 20 bold", text="No possible moves"+str(who))
-        self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
-        self.w.tag_lower(self.r4, self.text4)
+            # popup message "No possible moves":
+            if not self.controller.whoIsNext().doesPlayFirst():
+                who = " for computer"
+            else:
+                who = "."
+            self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
+                                            font="Times 20 bold", text="No possible moves"+str(who))
+            self.r4 = self.w.create_rectangle(self.w.bbox(self.text4), fill="white")
+            self.w.tag_lower(self.r4, self.text4)
 
-        # update number of moves, so other player is next
-        self.player.updateNumMoves()
-        # update status text:
-        self.w.delete(self.status_text)
-        self.w.delete(self.status_text2)
-        self.w.delete(self.line1)
-        self.w.delete(self.text5)
-        self.player = self.controller.whoIsNext()
-        color = self.player.getPlayerColor()
-        if color == "B":
-            color = "BLACK"
-        else:
-            color = "WHITE"
-        self.status_text = self.w.create_text(
-            20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
-        self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
-                                               text=self._status_string2())
-        self.text5 = self.w.create_text(
-            138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
-        self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-        self.master.update()
-        time.sleep(3)
-        self.w.delete(self.text4)
-        self.w.delete(self.r4)
+            # update number of moves, so other player is next
+            self.player.updateNumMoves()
+            # update status text:
+            self.w.delete(self.status_text)
+            self.w.delete(self.status_text2)
+            self.w.delete(self.line1)
+            self.w.delete(self.text5)
+            self.player = self.controller.whoIsNext()
+            color = self.player.getPlayerColor()
+            if color == "B":
+                color = "BLACK"
+            else:
+                color = "WHITE"
+            self.status_text = self.w.create_text(
+                20, 3, font="Verdana 12 bold", fill="blue", anchor=NW, text=self._status_string())
+            self.status_text2 = self.w.create_text(25, 478, font="Verdana 11 bold", anchor=NW, fill="blue",
+                                                   text=self._status_string2())
+            self.text5 = self.w.create_text(
+                138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
+            self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
+            self.master.update()
+            time.sleep(3)
+            self.w.delete(self.text4)
+            self.w.delete(self.r4)
 
-        # who is next
-        if not self.controller.whoIsNext().doesPlayFirst() and not self.controller.isGameOver():
-            self.computerPlayingVisual()
+            # who is next
+            if not self.controller.whoIsNext().doesPlayFirst() and not self.controller.isGameOver():
+                self.computerPlayingVisual()
 
 
     def computerPlayingVisual(self):
@@ -294,3 +296,4 @@ class BoardVisualization:
         time.sleep(5)
         self.master.quit()
         self.master.destroy()
+
