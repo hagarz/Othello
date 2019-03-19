@@ -307,7 +307,7 @@ class GameController (object):
         manager = Simulations.SimulationManager()  # initializing the simulation manager
         args = (discDictCopy,player1Color,player1Moves,player2Moves,AdjacencyDict)
         args_list = []
-        for i in range(10):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
+        for i in range(100):  # this range determines the number of simulations; the multiprocessing method will go over all args tuple in the args_list
             args_list.append(args)
 
         result = manager.run(args_list)

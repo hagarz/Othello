@@ -168,7 +168,7 @@ class BoardVisualization:
                                             font="Times 18 bold",text="Invalid move. Try again")
             self.r = self.w.create_rectangle(self.w.bbox(self.text2), fill="white")
             self.w.tag_lower(self.r, self.text2)
-            self.master.update_idletasks()
+            self.master.update()
             time.sleep(1.2)
             self.w.delete(self.text2)
             self.w.delete(self.r)
@@ -187,7 +187,7 @@ class BoardVisualization:
                     self.no_possible_moves()
 
                 else:
-                    self.master.update_idletasks()
+                    self.master.update()
 
 
     def no_possible_moves(self):
@@ -196,7 +196,7 @@ class BoardVisualization:
 
         # popup message "No possible moves":
         if not self.controller.whoIsNext().doesPlayFirst():
-            who = "for computer"
+            who = " for computer"
         else:
             who = " "
         self.text4 = self.w.create_text(250, 230, anchor=CENTER, fill="blue",
@@ -224,7 +224,7 @@ class BoardVisualization:
         self.text5 = self.w.create_text(
             138, 4, font="Verdana 12 bold", fill="red", anchor=NW, text=color)
         self.line1 = self.w.create_line(135, 20, 200, 20, dash=(4, 2), fill="black")
-        self.master.update_idletasks()
+        self.master.update()
         time.sleep(3)
         self.w.delete(self.text4)
         self.w.delete(self.r4)
@@ -240,7 +240,7 @@ class BoardVisualization:
                                         text="Computer is thinking...")
         self.r6 = self.w.create_rectangle(self.w.bbox(self.text6), fill="white")
         self.w.tag_lower(self.r6, self.text6)
-        self.master.update_idletasks()
+        self.master.update()
 
         disc, updateList = self.controller.computerPlaying()
         self.w.delete(self.line1)
@@ -274,7 +274,7 @@ class BoardVisualization:
                                                text=self._status_string2())
         self.w.delete(self.text6)
         self.w.delete(self.r6)
-        self.master.update_idletasks()
+        self.master.update()
 
         if not self.controller.anyPossibleMoves() and not self.controller.isGameOver():
             self.no_possible_moves()
@@ -290,7 +290,7 @@ class BoardVisualization:
                                         font="Times 30 bold", text="GAME OVER\n" + "    " + str(winner) + " wins!")
         self.r3 = self.w.create_rectangle(self.w.bbox(self.text3), fill="black")
         self.w.tag_lower(self.r3, self.text3)
-        self.master.update_idletasks()
-        time.sleep(4)
+        self.master.update()
+        time.sleep(5)
         self.master.quit()
         self.master.destroy()
