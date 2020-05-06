@@ -312,7 +312,7 @@ class GameController (object):
         args_list = []
         # this range determines the number of simulations;
         # the multiprocessing method will go over all args tuple in the args_list
-        for i in range(100):
+        for i in range(200):
             args_list.append(args)
 
         result = manager.run(args_list)

@@ -1,15 +1,6 @@
 .idea/
 Adjacency.xlsx
-Adjacency_v.2.xlsx
-AdjList_old.csv
-Book1(Autosaved)(2).xlsx
-Book1(Autosaved).xlsx
-first_simulation.xlsx
-networkx-networkx-2.2.zip
-networkx_reference.pdf
-networkx_tutorial.pdf
 Scheme.xlsx
 sandboxII.py
-sandbox_shushushu.py
-requirements.txt
+sandboxI.py
 .gitignore
