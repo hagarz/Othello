@@ -1,7 +1,5 @@
 # Othello
 
-**Works with Python3**
-
 Othello or Reversi is a classic strategy board game for two players, played on an 8x8 uncheckered board.
 This version is for a single person playing against the computer.
 
